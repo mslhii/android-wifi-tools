@@ -24,6 +24,7 @@ def parse_xml(xml_path):
     config_key = ""
     psk = ""
     key_mgmt = ""
+    count = 0
 
     with open(xml_path) as f:
         for line in f.readlines():
@@ -40,28 +41,70 @@ def parse_xml(xml_path):
                 config_key = config_key.replace("&quot;", ",")
 
                 key_mgmt = config_key.split(",")[2]
+                if key_mgmt == "WPA_PSK":
+                    #print("Replace WPA_PSK")
+                    key_mgmt = key_mgmt.replace("_", "-")
 
-                print("Config key obtained: {}".format(config_key))
-                print("key_mgmt obtained: {}".format(key_mgmt))
+                #print("Config key obtained: {}".format(config_key))
+                #print("key_mgmt obtained: {}".format(key_mgmt))
             elif line.startswith("<string name=\"SSID\">"):
                 ssid = line.replace("<string name=\"SSID\">", "")
                 ssid = ssid.replace("</string>", "")
                 ssid = ssid.replace("&quot;", "")
 
-                print("SSID obtained: {}".format(ssid))
+                #print("SSID obtained: {}".format(ssid))
             elif line.startswith("<string name=\"PreSharedKey\">"):
                 psk= line.replace("<string name=\"PreSharedKey\">", "")
                 psk = psk.replace("</string>", "")
                 psk = psk.replace("&quot;", "")
 
-                print("PSK obtained: {}".format(psk))
+                #print("PSK obtained: {}".format(psk))
             elif line.endswith("<null name=\"PreSharedKey\" />"):
                 psk = ""
-                print("No PSK for this network")
+                #print("No PSK for this network")
             elif line.endswith("</WifiConfiguration>"):
-                parsed_dict = {"ssid": ssid, "config_key": config_key, "psk": psk, "key_mgmt": key_mgmt}
+                priority = count + 1
+                parsed_dict = {"ssid": ssid, "config_key": config_key, "psk": psk, "key_mgmt": key_mgmt, "priority": priority}
                 print("Attaching dict to list: {}".format(parsed_dict))
                 return_list.append(parsed_dict)
+                count += 1
+
+    print("Parsed {} networks".format(count))
+    return return_list
+
+def write_conf_file(input_list, file_outpath):
+    print("Generate wpa_supplicant.conf file with input list of dicts to {}".format(file_outpath))
+
+    count = 0
+
+    f = open(file_outpath, "w+")
+    f.write("ctrl_interface=eth0\n")
+    f.write("update_config=1\n")
+    f.write("\n")
+
+    """
+    network={
+    ssid="2WIRE538_2GEXT"
+    psk="9552701483"
+    priority=12
+    }
+    """
+
+    for network_item in input_list:
+        f.write("network={\n")
+        f.write("\tssid=\"{}\"\n".format(network_item["ssid"]))
+
+        if network_item["key_mgmt"] != "NONE" or len(network_item["psk"]) > 0:
+            f.write("\tpsk=\"{}\"\n".format(network_item["psk"]))
+
+        f.write("\tkey_mgmt={}\n".format(network_item["key_mgmt"]))
+        f.write("\tpriority={}\n".format(network_item["priority"]))
+        f.write("}\n")
+        f.write("\n")
+        count += 1
+    f.close()
+
+    print("Wrote {} networks!".format(count))
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog='wificonfig_downgrader',
@@ -77,12 +120,19 @@ if __name__ == "__main__":
                         type=str,
                         default=os.getcwd(),
                         help='Dir path to write file. Defaults to current working directory')
+    parser.add_argument('-p',
+                        '--postfix',
+                        metavar='postfix',
+                        type=str,
+                        default="",
+                        help='Postfix to differentiate wpa_supplicant.conf files (writes to wpa_supplicant_<postfix>.conf')
 
     # Start of script
     args = parser.parse_args()
 
     input_path = args.inpath
     output_path = args.outpath
+    output_postfix = args.postfix
 
     print("Processing input file at {}".format(input_path))
     if not os.path.exists(input_path):
@@ -91,3 +141,13 @@ if __name__ == "__main__":
 
     # Parse xml into list of dicts
     network_list = parse_xml(input_path)
+
+    # Take xml and create wpa_supplicant.conf with it
+    if len(output_postfix) > 0:
+        out_name = "wpa_supplicant_{}.conf".format(output_postfix)
+    else:
+        out_name = "wpa_supplicant.conf"
+    final_path = os.path.join(output_path, out_name)
+    write_bool = write_conf_file(network_list, final_path)
+
+    print("Finished!")
