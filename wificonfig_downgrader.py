@@ -42,7 +42,6 @@ def parse_xml(xml_path):
 
                 key_mgmt = config_key.split(",")[2]
                 if key_mgmt == "WPA_PSK":
-                    #print("Replace WPA_PSK")
                     key_mgmt = key_mgmt.replace("_", "-")
 
                 #print("Config key obtained: {}".format(config_key))
