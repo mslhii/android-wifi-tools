@@ -44,7 +44,6 @@ def parse_xml(xml_path):
                 if key_mgmt == "WPA_PSK":
                     key_mgmt = key_mgmt.replace("_", "-")
 
-                #print("Config key obtained: {}".format(config_key))
                 #print("key_mgmt obtained: {}".format(key_mgmt))
             elif line.startswith("<string name=\"SSID\">"):
                 ssid = line.replace("<string name=\"SSID\">", "")
