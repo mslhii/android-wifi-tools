@@ -49,7 +49,6 @@ def parse_xml(xml_path):
                 ssid = ssid.replace("</string>", "")
                 ssid = ssid.replace("&quot;", "")
 
-                #print("SSID obtained: {}".format(ssid))
             elif line.startswith("<string name=\"PreSharedKey\">"):
                 psk= line.replace("<string name=\"PreSharedKey\">", "")
                 psk = psk.replace("</string>", "")
