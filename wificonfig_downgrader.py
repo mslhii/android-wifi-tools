@@ -54,7 +54,6 @@ def parse_xml(xml_path):
                 psk = psk.replace("</string>", "")
                 psk = psk.replace("&quot;", "")
 
-                #print("PSK obtained: {}".format(psk))
             elif line.endswith("<null name=\"PreSharedKey\" />"):
                 psk = ""
                 #print("No PSK for this network")
