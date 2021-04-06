@@ -56,7 +56,6 @@ def parse_xml(xml_path):
 
             elif line.endswith("<null name=\"PreSharedKey\" />"):
                 psk = ""
-                #print("No PSK for this network")
             elif line.endswith("</WifiConfiguration>"):
                 priority = count + 1
                 parsed_dict = {"ssid": ssid, "config_key": config_key, "psk": psk, "key_mgmt": key_mgmt, "priority": priority}
