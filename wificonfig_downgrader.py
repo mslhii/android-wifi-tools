@@ -76,13 +76,7 @@ def write_conf_file(input_list, file_outpath):
     f.write("update_config=1\n")
     f.write("\n")
 
-    """
-    network={
-    ssid="2WIRE538_2GEXT"
-    psk="9552701483"
-    priority=12
-    }
-    """
+
 
     for network_item in input_list:
         f.write("network={\n")
