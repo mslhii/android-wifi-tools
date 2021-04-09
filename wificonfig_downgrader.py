@@ -77,7 +77,6 @@ def write_conf_file(input_list, file_outpath):
     f.write("\n")
 
 
-
     for network_item in input_list:
         f.write("network={\n")
         f.write("\tssid=\"{}\"\n".format(network_item["ssid"]))
