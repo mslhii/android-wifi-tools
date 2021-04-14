@@ -29,7 +29,6 @@ def parse_xml(xml_path):
     with open(xml_path) as f:
         for line in f.readlines():
             line = line.strip()
-            #print(line)
 
             parsed_dict = {}
 
